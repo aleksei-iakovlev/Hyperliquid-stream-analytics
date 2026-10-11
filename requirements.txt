@@ -1,0 +1,8 @@
+hyperliquid-python-sdk
+asyncio
+APScheduler
+confluent_kafka
+flask
+psycopg
+psycopg-binary
+dotenv
