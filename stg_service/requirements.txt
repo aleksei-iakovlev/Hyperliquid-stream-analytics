@@ -1,0 +1,3 @@
+hyperliquid-python-sdk
+confluent-kafka
+python-dotenv
