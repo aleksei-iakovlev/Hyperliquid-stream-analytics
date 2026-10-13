@@ -9,16 +9,13 @@ class StgMessageProcessor:
         self.info = Info(constants.MAINNET_API_URL, skip_ws=False)
         self.subscription = {"type": "trades", "coin": "BTC"}
 
-    # функция, которая будет вызываться по расписанию.
     def callback(self, message):
-        data = message["data"]
-        for item in data:
-            trades = {"px": item["px"], "sz": item["sz"], "time": item["time"], "tid": item["tid"]}
-
-            with open("data/trades.json", "a", encoding="utf-8") as f:
-                json.dump(trades, f, indent=1, ensure_ascii=True)
-
-            self._producer.produce(trades)
+        data = message.get("data", [])
+        with open("data/trades.jsonl", "a", encoding="utf-8") as f:
+            for item in data:
+                trades = {"object_id": item["tid"],  "recieved_at": datetime.now(timezone.utc), "object_value": {"px": item["px"], "sz": item["sz"], "time": item["time"], "tid": item["tid"]}}
+                f.write(json.dumps(trade) + "\n")
+                self._producer.produce(trades)
 
     def get_trades(self):
         self.info.subscribe(self.subscription, self.callback)
