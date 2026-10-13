@@ -1,0 +1,7 @@
+<clickhouse>
+    <!-- Лимит памяти для всего сервера ClickHouse (в байтах). Даем 2 ГБ -->
+    <max_server_memory_usage>2147483648</max_server_memory_usage>
+
+    <!-- Сильно уменьшаем кэш индексов (mark cache) -->
+    <mark_cache_size>268435456</mark_cache_size> <!-- 256 МБ -->
+</clickhouse>
