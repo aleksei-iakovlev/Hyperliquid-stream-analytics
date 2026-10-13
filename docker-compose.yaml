@@ -5,15 +5,31 @@ services:
       context: .
       dockerfile: stg_service/dockerfile
     environment:
-      KAFKA_HOST: kafka
-      KAFKA_PORT: "9094"
-      KAFKA_STG_SERVICE_TOPIC: stg-service-topic
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+      KAFKA_STG_SERVICE_TOPIC: ${KAFKA_STG_SERVICE_TOPIC}
     depends_on:
       - kafka
     restart: unless-stopped
     volumes:
       - ./data:/app/data
 
+  cdm_service:
+    container_name: cdm_service
+    build:
+      context: .
+      dockerfile: cdm_service/dockerfile
+    environment:
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+      KAFKA_STG_SERVICE_TOPIC: ${KAFKA_STG_SERVICE_TOPIC}
+      KAFKA_CDM_SERVICE_TOPIC: ${KAFKA_CDM_SERVICE_TOPIC}
+    depends_on:
+      - kafka
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      
   kafka:
     container_name: kafka
     image: apache/kafka:4.0.0
@@ -33,3 +49,29 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+
+  klickhouse:
+    container_name: klickhouse_db
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse
+      
+      - ./configs/config.d/logging.xml:/etc/clickhouse-server/config.d/logging.xml:ro
+      - ./configs/config.d/memory.xml:/etc/clickhouse-server/config.d/memory.xml:ro
+
+    environment:
+      - CLICKHOUSE_USER=${CH_USER}
+      - CLICKHOUSE_PASSWORD=${CH_PASSWORD}
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    restart: always
+
+volumes:
+  clickhouse_data:
+  clickhouse_logs:
